@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Vulkanizer Tire Time</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #121212;
+    --bg-soft: #1a1a1a;
+    --panel: #1e1e1e;
+    --panel-border: #2c2c2c;
+    --text: #f0ece4;
+    --text-dim: #9a9a9a;
+    --amber: #d9a441;
+    --amber-light: #f0c369;
+    --amber-dark: #a97c2d;
+    --disabled: #3a3a3a;
+    --disabled-text: #6b6b6b;
+  }
+
+  *{ box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  html, body{
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Barlow', sans-serif;
+    min-height: 100vh;
+  }
+
+  body{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 8vh 20px 40px;
+    background:
+      radial-gradient(ellipse at top, rgba(217,164,65,0.05), transparent 55%),
+      var(--bg);
+  }
+
+  header{
+    text-align: center;
+    margin-bottom: 48px;
+  }
+
+  .eyebrow{
+    font-family: 'Barlow', sans-serif;
+    font-size: 13px;
+    letter-spacing: 0.06em;
+    color: var(--text-dim);
+    margin: 0 0 6px;
+  }
+
+  h1{
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 42px;
+    line-height: 1;
+    letter-spacing: 0.01em;
+    margin: 0;
+    color: var(--text);
+  }
+
+  h1 span{
+    color: var(--amber-light);
+  }
+
+  main{
+    width: 100%;
+    max-width: 420px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .tile{
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 22px 20px;
+    border-radius: 14px;
+    text-decoration: none;
+    color: var(--text);
+    background: linear-gradient(135deg, #262218 0%, #1c1a12 55%, #171512 100%);
+    border: 1px solid rgba(217,164,65,0.25);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.06),
+      0 6px 16px rgba(0,0,0,0.35);
+    overflow: hidden;
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+  }
+
+  .tile::before{
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(240,195,105,0.14), rgba(240,195,105,0) 45%);
+    pointer-events: none;
+  }
+
+  .tile:active{
+    transform: scale(0.98);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.06),
+      0 3px 8px rgba(0,0,0,0.35);
+  }
+
+  .tile-icon{
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--amber-light), var(--amber-dark));
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.35);
+  }
+
+  .tile-icon svg{
+    width: 26px;
+    height: 26px;
+    stroke: #1a1408;
+  }
+
+  .tile-body{
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  .tile-title{
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 24px;
+    line-height: 1.1;
+    color: var(--text);
+  }
+
+  .tile-desc{
+    font-size: 14px;
+    color: var(--text-dim);
+    line-height: 1.3;
+  }
+
+  .tile-arrow{
+    margin-left: auto;
+    flex-shrink: 0;
+    color: var(--amber-light);
+    opacity: 0.8;
+  }
+
+  .tile-arrow svg{ width: 20px; height: 20px; }
+
+  /* Disabled tile */
+  .tile.disabled{
+    background: linear-gradient(135deg, #232323 0%, #1c1c1c 100%);
+    border: 1px solid rgba(255,255,255,0.06);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.02);
+    cursor: default;
+  }
+
+  .tile.disabled::before{ display: none; }
+
+  .tile.disabled .tile-icon{
+    background: var(--disabled);
+    box-shadow: none;
+  }
+
+  .tile.disabled .tile-icon svg{ stroke: var(--disabled-text); }
+
+  .tile.disabled .tile-title{ color: var(--disabled-text); }
+
+  .tile.disabled .tile-desc{ color: #555; }
+
+  .badge{
+    font-family: 'Barlow', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--disabled-text);
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    padding: 4px 10px;
+    border-radius: 999px;
+    margin-left: auto;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  footer{
+    margin-top: 48px;
+    font-size: 12px;
+    color: #4a4a4a;
+    text-align: center;
+  }
+
+  button.tile{
+    font: inherit;
+    width: 100%;
+    cursor: pointer;
+  }
+
+  .qr-overlay{
+    position: fixed;
+    inset: 0;
+    background: rgba(8,8,8,0.94);
+    z-index: 999;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+
+  .qr-close{
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    color: var(--text-dim);
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  .qr-card{
+    background: #ffffff;
+    border-radius: 18px;
+    padding: 28px 24px;
+    width: 100%;
+    max-width: 300px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .qr-card img{
+    width: 100%;
+    max-width: 240px;
+    height: auto;
+    display: block;
+  }
+
+  .qr-caption{
+    margin: 16px 0 0;
+    font-family: 'Barlow', sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+    color: #1a1a1a;
+    text-align: center;
+  }
+
+  .qr-actions{
+    display: flex;
+    gap: 12px;
+    width: 100%;
+    max-width: 300px;
+    margin-top: 22px;
+  }
+
+  .qr-btn{
+    flex: 1;
+    padding: 14px 10px;
+    border-radius: 10px;
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    color: var(--text);
+    font-family: 'Barlow', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+  }
+
+  .qr-btn-danger{
+    color: #e0685c;
+    border-color: rgba(224,104,92,0.35);
+    background: rgba(224,104,92,0.08);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <p class="eyebrow">Vulkanizerska radnja</p>
+  <h1>Vulkanizer <span>Tire Time</span></h1>
+</header>
+
+<main>
+
+  <a class="tile" href="https://zoki02122.github.io/stanje-guma/">
+    <div class="tile-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="9"/>
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M12 3v3M12 18v3M21 12h-3M6 12H3"/>
+      </svg>
+    </div>
+    <div class="tile-body">
+      <div class="tile-title">Stanje guma</div>
+      <div class="tile-desc">Evidencija stanja i prodaje guma</div>
+    </div>
+    <div class="tile-arrow">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 18l6-6-6-6"/>
+      </svg>
+    </div>
+  </a>
+
+  <a class="tile" href="https://zoki02122.github.io/cenovnik-usluga/">
+    <div class="tile-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 4h11l5 5v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/>
+        <path d="M14 4v5h5"/>
+        <path d="M9 15h6M9 11h3"/>
+      </svg>
+    </div>
+    <div class="tile-body">
+      <div class="tile-title">Cenovnik guma</div>
+      <div class="tile-desc">Cene usluga po vozilu i felni</div>
+    </div>
+    <div class="tile-arrow">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 18l6-6-6-6"/>
+      </svg>
+    </div>
+  </a>
+
+  <div class="tile disabled" aria-disabled="true">
+    <div class="tile-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="7" width="18" height="13" rx="2"/>
+        <path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+      </svg>
+    </div>
+    <div class="tile-body">
+      <div class="tile-title">Hotel guma</div>
+      <div class="tile-desc">Skladištenje guma po sezoni</div>
+    </div>
+    <span class="badge">Uskoro</span>
+  </div>
+
+  <button type="button" class="tile" id="qrTile" onclick="handleQrTileClick()">
+    <div class="tile-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="7" height="7"/>
+        <rect x="14" y="3" width="7" height="7"/>
+        <rect x="3" y="14" width="7" height="7"/>
+        <path d="M14 14h3v3h-3zM19 14h2v2h-2zM14 19h2v2h-2zM19 19h2v2h-2z"/>
+      </svg>
+    </div>
+    <div class="tile-body">
+      <div class="tile-title">QR za plaćanje</div>
+      <div class="tile-desc" id="qrDesc">Dodaj QR kod iz galerije</div>
+    </div>
+    <div class="tile-arrow">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 18l6-6-6-6"/>
+      </svg>
+    </div>
+  </button>
+
+</main>
+
+<footer>v3</footer>
+
+<input type="file" id="qrFileInput" accept="image/*" style="display:none;">
+
+<div class="qr-overlay" id="qrOverlay">
+  <button type="button" class="qr-close" id="qrCloseBtn" aria-label="Zatvori">✕</button>
+  <div class="qr-card">
+    <img id="qrImage" src="" alt="QR za plaćanje">
+    <p class="qr-caption">Skeniraj za plaćanje</p>
+  </div>
+  <div class="qr-actions">
+    <button type="button" class="qr-btn" id="qrChangeBtn">Promeni sliku</button>
+    <button type="button" class="qr-btn qr-btn-danger" id="qrRemoveBtn">Ukloni</button>
+  </div>
+</div>
+
+<script>
+  var QR_KEY = 'vtt_payment_qr_v1';
+  var QR_MAX_DIMENSION = 600;
+
+  var qrFileInput = document.getElementById('qrFileInput');
+  var qrOverlay = document.getElementById('qrOverlay');
+  var qrImage = document.getElementById('qrImage');
+  var qrDesc = document.getElementById('qrDesc');
+
+  function getSavedQr(){
+    try{
+      return localStorage.getItem(QR_KEY);
+    }catch(err){
+      return null;
+    }
+  }
+
+  function refreshQrTile(){
+    var saved = getSavedQr();
+    qrDesc.textContent = saved ? 'Prikaži QR za naplatu' : 'Dodaj QR kod iz galerije';
+  }
+
+  function handleQrTileClick(){
+    var saved = getSavedQr();
+    if(saved){
+      openQrOverlay(saved);
+    } else {
+      qrFileInput.click();
+    }
+  }
+
+  function openQrOverlay(src){
+    var alreadyOpen = qrOverlay.style.display === 'flex';
+    qrImage.src = src;
+    qrOverlay.style.display = 'flex';
+    if(!alreadyOpen){
+      history.pushState({ qrOverlay: true }, '');
+    }
+  }
+
+  function closeQrOverlay(){
+    var wasOpen = qrOverlay.style.display === 'flex';
+    qrOverlay.style.display = 'none';
+    if(wasOpen && history.state && history.state.qrOverlay){
+      history.back();
+    }
+  }
+
+  window.addEventListener('popstate', function(){
+    if(qrOverlay.style.display === 'flex'){
+      qrOverlay.style.display = 'none';
+    }
+  });
+
+  function handleFileSelected(){
+    var file = qrFileInput.files && qrFileInput.files[0];
+    if(!file) return;
+
+    var reader = new FileReader();
+    reader.onload = function(ev){
+      var img = new Image();
+      img.onload = function(){
+        var w = img.width, h = img.height;
+        if(w > QR_MAX_DIMENSION || h > QR_MAX_DIMENSION){
+          var scale = QR_MAX_DIMENSION / Math.max(w, h);
+          w = Math.round(w * scale);
+          h = Math.round(h * scale);
+        }
+        var canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        var ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, w, h);
+        ctx.drawImage(img, 0, 0, w, h);
+        var dataUrl = canvas.toDataURL('image/png');
+
+        try{
+          localStorage.setItem(QR_KEY, dataUrl);
+          refreshQrTile();
+          openQrOverlay(dataUrl);
+        }catch(err){
+          alert('Slika je prevelika da se sačuva na ovom telefonu. Probaj drugu sliku ili manji screenshot.');
+        }
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+    qrFileInput.value = '';
+  }
+
+  function removeQr(){
+    try{
+      localStorage.removeItem(QR_KEY);
+    }catch(err){}
+    closeQrOverlay();
+    refreshQrTile();
+  }
+
+  qrFileInput.addEventListener('change', handleFileSelected);
+  document.getElementById('qrCloseBtn').addEventListener('click', closeQrOverlay);
+  document.getElementById('qrChangeBtn').addEventListener('click', function(){ qrFileInput.click(); });
+  document.getElementById('qrRemoveBtn').addEventListener('click', removeQr);
+
+  refreshQrTile();
+</script>
+
+</body>
+</html>
