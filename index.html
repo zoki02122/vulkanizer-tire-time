@@ -397,6 +397,18 @@
   </div>
 </div>
 
+<div class="qr-overlay" id="exitOverlay">
+  <div class="qr-card" style="text-align:center;">
+    <div style="font-size:56px; line-height:1; margin-bottom:8px;">🚪</div>
+    <h2 style="font-family:'Barlow Condensed', sans-serif; margin:0 0 6px; color:#1a1a1a;">Izlazak iz aplikacije</h2>
+    <p class="qr-caption" style="color:#555;">Da li sigurno želite da izađete?</p>
+  </div>
+  <div class="qr-actions">
+    <button type="button" class="qr-btn" id="exitStayBtn">↩️ Ostani</button>
+    <button type="button" class="qr-btn qr-btn-danger" id="exitLeaveBtn">🚪 Izađi</button>
+  </div>
+</div>
+
 <script>
   var QR_KEY = 'vtt_payment_qr_v1';
   var QR_MAX_DIMENSION = 600;
@@ -448,7 +460,38 @@
   window.addEventListener('popstate', function(){
     if(qrOverlay.style.display === 'flex'){
       qrOverlay.style.display = 'none';
+      return;
     }
+    if(exitConfirmed){ return; }
+    exitTrapArmed = false;
+    exitOverlay.style.display = 'flex';
+  });
+
+  var exitOverlay = document.getElementById('exitOverlay');
+  var exitTrapArmed = false;
+  var exitConfirmed = false;
+  function armExitTrap(){
+    if(!exitTrapArmed){
+      history.pushState({ exitTrap:true }, '');
+      exitTrapArmed = true;
+    }
+  }
+  document.addEventListener('pointerdown', function onceP(){
+    armExitTrap();
+    document.removeEventListener('pointerdown', onceP);
+  }, {once:true});
+  document.addEventListener('keydown', function onceK(){
+    armExitTrap();
+    document.removeEventListener('keydown', onceK);
+  }, {once:true});
+  document.getElementById('exitStayBtn').addEventListener('click', function(){
+    exitOverlay.style.display = 'none';
+    armExitTrap();
+  });
+  document.getElementById('exitLeaveBtn').addEventListener('click', function(){
+    exitOverlay.style.display = 'none';
+    exitConfirmed = true;
+    history.back();
   });
 
   function handleFileSelected(){
