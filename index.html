@@ -226,12 +226,44 @@
     padding: 24px;
   }
 
-  .qr-close{
+  .qr-topbar{
     position: absolute;
     top: 20px;
     right: 20px;
-    width: 40px;
-    height: 40px;
+    display: flex;
+    align-items: center;
+    gap: 28px;
+  }
+
+  .qr-gear{
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: transparent;
+    border: 1px solid var(--panel-border);
+    color: #6f6f6f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+    transition: color 0.15s ease, border-color 0.15s ease, transform 0.25s ease;
+  }
+
+  .qr-gear svg{ width: 20px; height: 20px; }
+
+  .qr-gear.active{
+    color: var(--amber-light);
+    border-color: rgba(217,164,65,0.45);
+    transform: rotate(60deg);
+  }
+
+  #qrActions{ display: none; }
+  #qrActions.open{ display: flex; }
+
+  .qr-close{
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
     background: var(--panel);
     border: 1px solid var(--panel-border);
@@ -381,17 +413,25 @@
 
 </main>
 
-<footer>v4</footer>
+<footer>v5</footer>
 
 <input type="file" id="qrFileInput" accept="image/*" style="display:none;">
 
 <div class="qr-overlay" id="qrOverlay">
-  <button type="button" class="qr-close" id="qrCloseBtn" aria-label="Zatvori">✕</button>
+  <div class="qr-topbar">
+    <button type="button" class="qr-gear" id="qrGearBtn" aria-label="Podešavanja QR koda">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+      </svg>
+    </button>
+    <button type="button" class="qr-close" id="qrCloseBtn" aria-label="Zatvori">✕</button>
+  </div>
   <div class="qr-card">
     <img id="qrImage" src="" alt="QR za plaćanje">
     <p class="qr-caption">Skeniraj za plaćanje</p>
   </div>
-  <div class="qr-actions">
+  <div class="qr-actions" id="qrActions">
     <button type="button" class="qr-btn" id="qrChangeBtn">Promeni sliku</button>
     <button type="button" class="qr-btn qr-btn-danger" id="qrRemoveBtn">Ukloni</button>
   </div>
@@ -440,8 +480,17 @@
     }
   }
 
+  var qrActions = document.getElementById('qrActions');
+  var qrGearBtn = document.getElementById('qrGearBtn');
+
+  function setQrActions(open){
+    qrActions.classList.toggle('open', open);
+    qrGearBtn.classList.toggle('active', open);
+  }
+
   function openQrOverlay(src){
     var alreadyOpen = qrOverlay.style.display === 'flex';
+    setQrActions(false);
     qrImage.src = src;
     qrOverlay.style.display = 'flex';
     if(!alreadyOpen){
@@ -451,6 +500,7 @@
 
   function closeQrOverlay(){
     var wasOpen = qrOverlay.style.display === 'flex';
+    setQrActions(false);
     qrOverlay.style.display = 'none';
     if(wasOpen && history.state && history.state.qrOverlay){
       history.back();
@@ -460,6 +510,7 @@
   window.addEventListener('popstate', function(){
     if(qrOverlay.style.display === 'flex'){
       qrOverlay.style.display = 'none';
+      setQrActions(false);
       return;
     }
     if(exitConfirmed){ return; }
@@ -532,6 +583,7 @@
   }
 
   function removeQr(){
+    if(!confirm('Ukloniti QR kod za plaćanje?')) return;
     try{
       localStorage.removeItem(QR_KEY);
     }catch(err){}
@@ -541,6 +593,9 @@
 
   qrFileInput.addEventListener('change', handleFileSelected);
   document.getElementById('qrCloseBtn').addEventListener('click', closeQrOverlay);
+  qrGearBtn.addEventListener('click', function(){
+    setQrActions(!qrActions.classList.contains('open'));
+  });
   document.getElementById('qrChangeBtn').addEventListener('click', function(){ qrFileInput.click(); });
   document.getElementById('qrRemoveBtn').addEventListener('click', removeQr);
 
