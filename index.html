@@ -413,7 +413,7 @@
 
 </main>
 
-<footer>v7</footer>
+<footer>v8</footer>
 
 <input type="file" id="qrFileInput" accept="image/*" style="display:none;">
 
@@ -625,6 +625,11 @@ document.querySelectorAll('a.tile[data-app]').forEach(a => {
       + ';S.browser_fallback_url=' + encodeURIComponent(url) + ';end';
   });
 });
+
+/* network-first service worker (uvek najnovija verzija, kes samo bez interneta) */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });
+}
 </script>
 
 </body>
