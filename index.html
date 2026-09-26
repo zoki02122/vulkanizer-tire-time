@@ -413,7 +413,7 @@
 
 </main>
 
-<footer>v6</footer>
+<footer>v7</footer>
 
 <input type="file" id="qrFileInput" accept="image/*" style="display:none;">
 
@@ -605,13 +605,24 @@
    Chrome sintaksa), da bi se Stanje guma / Cenovnik otvorili kao sopstvene instalirane aplikacije,
    a ne u ugrađenom browseru table (traka sa X i adresom). U običnom Chrome tabu – obični linkovi. */
 const RUNS_INSTALLED = window.matchMedia && window.matchMedia('(display-mode: standalone)').matches;
+/* Interna imena instaliranih aplikacija (iz chrome://webapks na Zoranovom telefonu).
+   Chrome instaliranu web aplikaciju pokrece samo kada link nosi njeno tacno ime (package);
+   bez imena link ostaje unutar table (izvor: Chromium ExternalNavigationHandler.java).
+   Ako se aplikacija ponovo instalira i ime promeni, radi rezervni put (browser_fallback_url). */
+const APP_PACKAGES = {
+  'https://zoki02122.github.io/stanje-guma/':     'org.chromium.webapk.ae613c0b299810347_v2',
+  'https://zoki02122.github.io/cenovnik-usluga/': 'org.chromium.webapk.ae15d4d4b18cca871_v2'
+};
 document.querySelectorAll('a.tile[data-app]').forEach(a => {
   a.addEventListener('click', (e) => {
     if (!RUNS_INSTALLED) return;
-    e.preventDefault();
     const url = a.href;
+    const pkg = APP_PACKAGES[url];
+    if (!pkg) return;
+    e.preventDefault();
     location.href = 'intent://' + url.replace(/^https:\/\//, '')
-      + '#Intent;scheme=https;S.browser_fallback_url=' + encodeURIComponent(url) + ';end';
+      + '#Intent;scheme=https;package=' + pkg
+      + ';S.browser_fallback_url=' + encodeURIComponent(url) + ';end';
   });
 });
 </script>
