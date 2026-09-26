@@ -339,7 +339,7 @@
 
 <main>
 
-  <a class="tile" href="https://zoki02122.github.io/stanje-guma/">
+  <a class="tile" data-app href="https://zoki02122.github.io/stanje-guma/">
     <div class="tile-icon">
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="12" cy="12" r="9"/>
@@ -358,7 +358,7 @@
     </div>
   </a>
 
-  <a class="tile" href="https://zoki02122.github.io/cenovnik-usluga/">
+  <a class="tile" data-app href="https://zoki02122.github.io/cenovnik-usluga/">
     <div class="tile-icon">
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M4 4h11l5 5v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/>
@@ -413,7 +413,7 @@
 
 </main>
 
-<footer>v5</footer>
+<footer>v6</footer>
 
 <input type="file" id="qrFileInput" accept="image/*" style="display:none;">
 
@@ -600,6 +600,20 @@
   document.getElementById('qrRemoveBtn').addEventListener('click', removeQr);
 
   refreshQrTile();
+
+/* Instalirana tabla: pločice otvaraju aplikacije preko Android sistema (intent: link, zvanična
+   Chrome sintaksa), da bi se Stanje guma / Cenovnik otvorili kao sopstvene instalirane aplikacije,
+   a ne u ugrađenom browseru table (traka sa X i adresom). U običnom Chrome tabu – obični linkovi. */
+const RUNS_INSTALLED = window.matchMedia && window.matchMedia('(display-mode: standalone)').matches;
+document.querySelectorAll('a.tile[data-app]').forEach(a => {
+  a.addEventListener('click', (e) => {
+    if (!RUNS_INSTALLED) return;
+    e.preventDefault();
+    const url = a.href;
+    location.href = 'intent://' + url.replace(/^https:\/\//, '')
+      + '#Intent;scheme=https;S.browser_fallback_url=' + encodeURIComponent(url) + ';end';
+  });
+});
 </script>
 
 </body>
