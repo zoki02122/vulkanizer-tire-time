@@ -1,6 +1,6 @@
 /* Vulkanizer Tire Time — service worker, NETWORK-FIRST:
    uvek prvo mreza (najnovija verzija), kes samo kad nema interneta. */
-const CACHE = 'tire-time-v1';
+const CACHE = 'tire-time-v9';
 
 self.addEventListener('install', (e) => { self.skipWaiting(); });
 
